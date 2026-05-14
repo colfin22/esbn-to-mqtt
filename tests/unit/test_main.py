@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 import pytest
 from esbn_to_mqtt import main
-from esbn_to_mqtt.esbn import EsbnError
+from esbn_to_mqtt.esbn import EsbnChallengeError, EsbnError
 from esbn_to_mqtt.hdf import HdfParseError
 from esbn_to_mqtt.models import AppConfig, EsbnCredentials, MqttConfig
 from esbn_to_mqtt.mqtt import MqttMessage, MqttPublishError, build_availability_message
@@ -167,6 +167,89 @@ def test_main_uses_bounded_backoff_after_transient_runtime_error(
         main.main()
 
     sleep.assert_called_once_with(main.ERROR_RETRY_BACKOFF_SECONDS)
+
+
+def test_main_uses_poll_interval_backoff_after_esbn_challenge(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config = app_config()
+    sleep = Mock(side_effect=KeyboardInterrupt)
+
+    monkeypatch.setattr(sys, "argv", ["prog", "--data-dir", str(tmp_path)])
+    monkeypatch.setattr(
+        main,
+        "run_once",
+        Mock(side_effect=EsbnChallengeError("ESBN sign in challenge detected")),
+    )
+    monkeypatch.setattr(main, "load_options_file", Mock(return_value=config))
+    monkeypatch.setattr(main, "configure_logging", Mock())
+    monkeypatch.setattr(main, "_publish_offline_if_no_cached_state", Mock())
+    monkeypatch.setattr(main.time, "sleep", sleep)
+
+    with pytest.raises(KeyboardInterrupt):
+        main.main()
+
+    sleep.assert_called_once_with(config.poll_interval_seconds)
+
+
+def test_run_once_refuses_login_during_challenge_cooldown(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config = app_config()
+    (tmp_path / "esbn-challenge.json").write_text(
+        '{"challenged_at": "2026-05-14T14:00:00+00:00"}',
+        encoding="utf-8",
+    )
+    esbn_client = Mock()
+
+    monkeypatch.setattr(main, "load_options_file", Mock(return_value=config))
+    monkeypatch.setattr(main, "configure_logging", Mock())
+    monkeypatch.setattr(
+        main,
+        "_utc_now",
+        Mock(return_value=datetime(2026, 5, 14, 15, 0, tzinfo=UTC)),
+    )
+    monkeypatch.setattr(main, "EsbnClient", esbn_client)
+
+    with pytest.raises(EsbnChallengeError, match="browser verification"):
+        main.run_once(tmp_path / "options.json", tmp_path)
+
+    esbn_client.assert_not_called()
+
+
+def test_main_records_challenge_cooldown_after_esbn_challenge(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    config = app_config()
+
+    monkeypatch.setattr(sys, "argv", ["prog", "--once", "--data-dir", str(tmp_path)])
+    monkeypatch.setattr(
+        main,
+        "run_once",
+        Mock(side_effect=EsbnChallengeError(
+            "ESBN requested browser verification; automated login paused until next poll"
+        )),
+    )
+    monkeypatch.setattr(main, "load_options_file", Mock(return_value=config))
+    monkeypatch.setattr(main, "configure_logging", Mock())
+    monkeypatch.setattr(main, "_publish_offline_if_no_cached_state", Mock())
+    monkeypatch.setattr(
+        main,
+        "_utc_now",
+        Mock(return_value=datetime(2026, 5, 14, 15, 0, tzinfo=UTC)),
+    )
+
+    with caplog.at_level("ERROR"):
+        main.main()
+
+    assert (tmp_path / "esbn-challenge.json").read_text(encoding="utf-8") == (
+        '{"challenged_at": "2026-05-14T15:00:00+00:00"}'
+    )
+    assert "ESBN requested browser verification" in caplog.text
 
 
 def test_run_once_raises_runtime_state_error_for_malformed_cached_state(

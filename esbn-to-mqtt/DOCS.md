@@ -28,14 +28,16 @@ The app publishes MQTT discovery sensors that can be added to Home Assistant Ene
 
 The app now fetches live ESBN data during each poll. Freshness depends on the source portal exposing updated readings and on the configured polling interval, so new consumption values can still lag behind the meter by a few hours.
 
+The app stores ESBN session cookies in its Home Assistant app data directory and reuses them on later polls. This avoids a full username/password login on every poll when ESBN keeps the session valid.
+
 ## Troubleshooting
 
 - ESBN auth failures usually mean the username or password is wrong, or the session was rejected by ESBN before the portal reached the download step.
-- CAPTCHA or challenge pages stop the login flow entirely; retry later and confirm the account can sign in manually in a browser.
+- CAPTCHA or challenge pages stop the login flow entirely. When ESBN asks for a browser challenge, the app backs off until the next configured poll instead of retrying every few minutes. Retry later, or sign in manually in a browser to confirm the account is usable.
 - Missing data: confirm the selected MPRN has data available and that the account can see the relevant meter history.
 - MQTT credential failures: verify `mqtt_host`, `mqtt_port`, `mqtt_username`, and `mqtt_password`, and confirm the broker is reachable from the app environment.
 - Stale data: check the polling interval and the app logs for failed fetch or publish attempts.
 
 ## Logging
 
-Logs redact credentials and raw MPRNs. Do not paste sensitive values into issues or support threads.
+Logs redact credentials and raw MPRNs. Do not paste sensitive values, saved session cookies, or raw app data files into issues or support threads.
