@@ -1,3 +1,4 @@
+import struct
 from pathlib import Path
 
 import yaml
@@ -19,6 +20,13 @@ def load_yaml_as_strings(path: Path) -> dict[str, object]:
     return data
 
 
+def png_dimensions(path: Path) -> tuple[int, int]:
+    with path.open("rb") as handle:
+        header = handle.read(24)
+    assert header.startswith(b"\x89PNG\r\n\x1a\n")
+    return struct.unpack(">II", header[16:24])
+
+
 def test_repository_metadata() -> None:
     repository = load_yaml(ROOT / "repository.yaml")
 
@@ -30,7 +38,7 @@ def test_app_metadata() -> None:
     config = load_yaml(ROOT / "esbn-to-mqtt" / "config.yaml")
 
     assert config["name"] == "esbn-to-mqtt"
-    assert config["version"] == "0.2.3"
+    assert config["version"] == "0.2.4"
     assert config["slug"] == "esbn_to_mqtt"
     assert config["options"]["mqtt_host"] == "core-mosquitto"
     assert config["options"]["mqtt_port"] == 1883
@@ -42,6 +50,11 @@ def test_app_metadata() -> None:
     assert "mqtt:need" in config["services"]
     assert config["options"]["log_level"] == "info"
     assert config["schema"]["log_level"] == "list(trace|debug|info|notice|warning|error|fatal)"
+
+
+def test_app_presentation_assets() -> None:
+    assert png_dimensions(ROOT / "esbn-to-mqtt" / "icon.png") == (128, 128)
+    assert png_dimensions(ROOT / "esbn-to-mqtt" / "logo.png") == (250, 100)
 
 
 def test_app_build_metadata() -> None:
