@@ -159,6 +159,15 @@ def run_once(options_path: Path, data_dir: Path) -> AppConfig:
 
     try:
         csv_content = client.download_30_min_kwh_hdf()
+        if config.export_hdf_dir:
+            try:
+                export_dir = Path(config.export_hdf_dir)
+                export_dir.mkdir(parents=True, exist_ok=True)
+                export_file = export_dir / "esbn_hdf_latest.csv"
+                export_file.write_text(csv_content, encoding="utf-8")
+                LOGGER.info("Exported HDF CSV to %s", export_file)
+            except OSError as exc:
+                LOGGER.warning("Failed to export HDF CSV to %s: %s", config.export_hdf_dir, exc)
         readings = parse_hdf_csv(csv_content)
         processed_before = accumulator.processed_intervals
         accumulator = accumulator.apply(readings)

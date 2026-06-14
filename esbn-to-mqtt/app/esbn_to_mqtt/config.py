@@ -171,6 +171,7 @@ def load_config_dict(options: dict[str, Any]) -> AppConfig:
         tariff=_tariff_config(options),
         poll_interval_hours=poll_interval_hours,
         log_level=_log_level(options),
+        export_hdf_dir=_optional_str(options, "export_hdf_dir"),
     )
 
 
@@ -204,5 +205,6 @@ def load_env_config() -> AppConfig:
             "tariff_peak_rate_eur_per_kwh": _env_float("TARIFF_PEAK_RATE_EUR_PER_KWH", "0"),
             "tariff_currency": os.environ.get("TARIFF_CURRENCY", "EUR"),
             "log_level": os.environ.get("LOG_LEVEL", "info"),
+            "export_hdf_dir": os.environ.get("EXPORT_HDF_DIR"),
         }
     )

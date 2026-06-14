@@ -23,6 +23,7 @@ Configure these settings in the app:
 - `tariff_peak_rate_eur_per_kwh` - VAT-inclusive peak unit rate in currency/kWh
 - `tariff_currency` - default `EUR`
 - `log_level` - default `info`; accepted values `trace`, `debug`, `info`, `notice`, `warning`, `error`, `fatal`
+- `export_hdf_dir` - default `/share/esbn`; when set, the raw downloaded HDF CSV is written to `<dir>/esbn_hdf_latest.csv` on every successful poll (fork-only option). Leave blank to disable. Requires the `share:rw` map (already included in this fork).
 
 ## Energy Dashboard Setup
 

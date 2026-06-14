@@ -1,3 +1,3 @@
-name: esbn-to-mqtt Home Assistant app repository
-url: https://github.com/omgapuppy/esbn-to-mqtt
-maintainer: omgapuppy
+name: esbn-to-mqtt (colfin22 fork)
+url: https://github.com/colfin22/esbn-to-mqtt
+maintainer: colfin22 <colfin22@gmail.com>
