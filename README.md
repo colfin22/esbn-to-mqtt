@@ -1,4 +1,6 @@
-# esbn-to-mqtt
+# esbn-to-mqtt (colfin22 fork)
+
+> **Fork notice:** This is a personal fork of [omgapuppy/esbn-to-mqtt](https://github.com/omgapuppy/esbn-to-mqtt). All credit for the original app goes to the upstream author. This fork adds one option — **`export_hdf_dir`** — which writes the raw downloaded HDF CSV to disk on every poll (e.g. `/share/esbn/esbn_hdf_latest.csv`), so external tooling can consume the full half-hourly series that is not published over MQTT. See [`esbn-to-mqtt/DOCS.md`](esbn-to-mqtt/DOCS.md) and the [CHANGELOG](esbn-to-mqtt/CHANGELOG.md).
 
 `esbn-to-mqtt` is an unofficial Home Assistant app that turns ESB Networks smart meter HDF exports into MQTT sensors for Home Assistant.
 
@@ -35,6 +37,7 @@ This is not a HACS integration and is not affiliated with, endorsed by, or conne
 4. Download the 30-minute HDF export and parse import/export kWh readings.
 5. Optionally apply day, night, and peak import rates to calculate cost.
 6. Publish retained MQTT discovery and state messages for Home Assistant.
+7. (Fork) If `export_hdf_dir` is set, write the raw HDF CSV to `<dir>/esbn_hdf_latest.csv` for external consumers.
 
 ## Requirements
 
@@ -48,7 +51,7 @@ This is not a HACS integration and is not affiliated with, endorsed by, or conne
 
 1. In Home Assistant, go to **Settings > Apps**.
 2. Open app repositories.
-3. Add `https://github.com/omgapuppy/esbn-to-mqtt`.
+3. Add `https://github.com/colfin22/esbn-to-mqtt` (this fork), or `https://github.com/omgapuppy/esbn-to-mqtt` for the upstream original.
 4. Install `esbn-to-mqtt`.
 5. Configure ESBN credentials, MPRN, and MQTT credentials in the app settings.
 6. Start the app.
