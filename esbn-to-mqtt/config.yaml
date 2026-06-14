@@ -1,8 +1,8 @@
-name: esbn-to-mqtt
-version: "0.4.3"
+name: esbn-to-mqtt (colfin22 fork)
+version: "0.4.3-colfin1"
 slug: esbn_to_mqtt
-description: Publish ESB Networks smart meter HDF data to Home Assistant MQTT sensors
-url: https://github.com/omgapuppy/esbn-to-mqtt/tree/main/esbn-to-mqtt
+description: Publish ESB Networks smart meter HDF data to Home Assistant MQTT sensors (fork adds export_hdf_dir)
+url: https://github.com/colfin22/esbn-to-mqtt/tree/main/esbn-to-mqtt
 arch:
   - aarch64
   - amd64
@@ -31,6 +31,7 @@ options:
   tariff_peak_rate_eur_per_kwh: 0.0
   tariff_currency: EUR
   log_level: info
+  export_hdf_dir: /share/esbn
 schema:
   esbn_username: email
   esbn_password: password
@@ -51,4 +52,6 @@ schema:
   tariff_peak_rate_eur_per_kwh: float(0,)
   tariff_currency: match(^[A-Za-z]{3}$)
   log_level: list(trace|debug|info|notice|warning|error|fatal)
-image: ghcr.io/omgapuppy/{arch}-esbn-to-mqtt
+  export_hdf_dir: str?
+map:
+  - share:rw

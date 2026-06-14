@@ -57,6 +57,7 @@ class AppConfig:
     log_level: str
     captcha: CaptchaConfig = CaptchaConfig()
     tariff: TariffConfig = TariffConfig()
+    export_hdf_dir: str | None = None
 
     @property
     def mprn(self) -> str:
