@@ -8,6 +8,8 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+import httpx
+
 from .captcha import build_captcha_solver
 from .config import load_options_file
 from .esbn import EsbnChallengeError, EsbnClient, EsbnError
@@ -277,7 +279,15 @@ def main() -> None:
         sleep_seconds = 0
         try:
             config = run_once(args.options, args.data_dir)
-        except (EsbnError, HdfParseError, MqttPublishError, RuntimeStateError) as exc:
+        except (
+            EsbnError,
+            HdfParseError,
+            MqttPublishError,
+            RuntimeStateError,
+            # Safety net: no httpx error may kill the poll loop (a raw
+            # ReadTimeout froze the sensors for 2 days, 04-07-2026).
+            httpx.HTTPError,
+        ) as exc:
             config = load_options_file(args.options)
             configure_logging(config.log_level)
             if (

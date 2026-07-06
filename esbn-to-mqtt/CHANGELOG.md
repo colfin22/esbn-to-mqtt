@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.4-colfin1 (colfin22 fork)
+
+- Survive ESBN portal timeouts instead of crashing: five raw `httpx` calls
+  (session check, landing page, credential submit, CAPTCHA template/scripts)
+  now route through the wrapping `_get`/`_post` helpers, and the main poll
+  loop catches `httpx.HTTPError` as a safety net. A portal `ReadTimeout` on
+  04-07-2026 previously killed the add-on and froze the sensors for 2 days;
+  it now logs the failure and retries on the normal backoff.
+
 ## 0.4.3-colfin1 (colfin22 fork)
 
 - Add `export_hdf_dir` option: when set, the raw downloaded HDF CSV is written to `<dir>/esbn_hdf_latest.csv` on every successful poll. Lets external tooling (e.g. an InfluxDB importer) consume the full half-hourly series, which is not published over MQTT.

@@ -124,7 +124,7 @@ class EsbnClient:
         if not any(self._cookie_jar):
             return None
 
-        response = self._client.get(ROOT_URL)
+        response = self._get(ROOT_URL, step="session check")
         self._ensure_success(response)
         if self._is_login_response(response):
             return None
@@ -169,7 +169,7 @@ class EsbnClient:
         )
 
     def _load_settings(self) -> dict[str, str]:
-        response = self._client.get(ROOT_URL)
+        response = self._get(ROOT_URL, step="landing page")
         self._ensure_success(response)
         return self._extract_settings(response.text)
 
@@ -201,8 +201,9 @@ class EsbnClient:
             f"{LOGIN_BASE_URL}{SELF_ASSERTED_PATH}"
             f"?tx={trans_id}&p=B2C_1A_signup_signin"
         )
-        response = self._client.post(
+        response = self._post(
             url,
+            step="credential submit",
             data={
                 "signInName": self._credentials.username,
                 "password": self._credentials.password,
@@ -297,14 +298,14 @@ class EsbnClient:
         if not isinstance(remote_resource, str) or not remote_resource:
             raise EsbnAuthenticationError("ESBN CAPTCHA page did not expose a site key")
 
-        template_response = self._client.get(remote_resource)
+        template_response = self._get(remote_resource, step="captcha template")
         self._ensure_success(template_response)
         site_key = self._find_recaptcha_site_key(template_response.text)
         if site_key is not None:
             return site_key
 
         for script_url in self._extract_script_urls(template_response.text, remote_resource):
-            script_response = self._client.get(script_url)
+            script_response = self._get(script_url, step="captcha script")
             self._ensure_success(script_response)
             site_key = self._find_recaptcha_site_key(script_response.text)
             if site_key is not None:

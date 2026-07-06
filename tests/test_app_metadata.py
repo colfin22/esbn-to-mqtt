@@ -30,15 +30,15 @@ def png_dimensions(path: Path) -> tuple[int, int]:
 def test_repository_metadata() -> None:
     repository = load_yaml(ROOT / "repository.yaml")
 
-    assert repository["name"] == "esbn-to-mqtt Home Assistant app repository"
-    assert repository["url"] == "https://github.com/omgapuppy/esbn-to-mqtt"
+    assert repository["name"] == "esbn-to-mqtt (colfin22 fork)"
+    assert repository["url"] == "https://github.com/colfin22/esbn-to-mqtt"
 
 
 def test_app_metadata() -> None:
     config = load_yaml(ROOT / "esbn-to-mqtt" / "config.yaml")
 
-    assert config["name"] == "esbn-to-mqtt"
-    assert config["version"] == "0.4.3"
+    assert config["name"] == "esbn-to-mqtt (colfin22 fork)"
+    assert config["version"] == "0.4.4-colfin1"
     assert config["slug"] == "esbn_to_mqtt"
     assert config["stage"] == "stable"
     assert config["options"]["mqtt_host"] == "core-mosquitto"
