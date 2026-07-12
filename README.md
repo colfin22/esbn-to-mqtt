@@ -1,6 +1,14 @@
-# esbn-to-mqtt (colfin22 fork)
+# esbn-to-mqtt — personal fork
 
-> **Fork notice:** This is a personal fork of [omgapuppy/esbn-to-mqtt](https://github.com/omgapuppy/esbn-to-mqtt). All credit for the original app goes to the upstream author. This fork adds one option — **`export_hdf_dir`** — which writes the raw downloaded HDF CSV to disk on every poll (e.g. `/share/esbn/esbn_hdf_latest.csv`), so external tooling can consume the full half-hourly series that is not published over MQTT. See [`esbn-to-mqtt/DOCS.md`](esbn-to-mqtt/DOCS.md) and the [CHANGELOG](esbn-to-mqtt/CHANGELOG.md).
+> [!IMPORTANT]
+> **This is a personal fork, kept only for my own Home Assistant setup — please don't use it as a general project.**
+> It exists to add one small thing I needed, is not maintained for anyone else, may lag behind upstream, and comes with no support.
+>
+> 👉 **Want ESBN-to-MQTT? Use the original — it's the real, maintained project:**
+> **[omgapuppy/esbn-to-mqtt](https://github.com/omgapuppy/esbn-to-mqtt).**
+> All credit for the app goes to its author, **[@omgapuppy](https://github.com/omgapuppy)**. If it's useful to you, [buy them a coffee ☕](https://www.buymeacoffee.com/omgapuppy).
+>
+> **The only change in this fork:** it adds one option — **`export_hdf_dir`** — which writes the raw downloaded HDF CSV to disk on every poll (e.g. `/share/esbn/esbn_hdf_latest.csv`) so my own tooling can read the full half-hourly series that isn't published over MQTT. Nothing else is changed. See [`esbn-to-mqtt/DOCS.md`](esbn-to-mqtt/DOCS.md) and the [CHANGELOG](esbn-to-mqtt/CHANGELOG.md).
 
 `esbn-to-mqtt` is an unofficial Home Assistant app that turns ESB Networks smart meter HDF exports into MQTT sensors for Home Assistant.
 
