@@ -90,3 +90,31 @@ def test_build_meter_metrics_omits_export_values_when_no_export_readings_exist()
     assert metrics.current_tariff_rate is None
     assert metrics.auth_path == "cookie"
     assert metrics.captcha_used is False
+
+def test_exporting_meter_reports_zero_today_when_the_hdf_lags_behind() -> None:
+    """The ESBN HDF lags ~24h, so a solar meter never has readings for "today".
+
+    Left as None, today_export_kwh is dropped from the MQTT state payload while the
+    discovery config still advertises the sensor — Home Assistant then renders
+    {{ value_json.today_export_kwh }} against a payload with no such key, the sensor
+    sticks at "unknown", and HA logs a template warning on every publish (737 of them
+    in one session on a live install). A meter that exports has exported ZERO today.
+    """
+    metrics = build_meter_metrics(
+        [
+            MeterReading(
+                timestamp=datetime(2026, 5, 15, 12, 0, tzinfo=UTC),   # yesterday
+                import_kwh=0.5,
+                export_kwh=0.3,
+            )
+        ],
+        processed_before=frozenset(),
+        processed_after=frozenset(),
+        auth_path="cookie",
+        captcha_used=False,
+        tariff=None,
+        now=datetime(2026, 5, 16, 20, 0, tzinfo=UTC),                # "today" has nothing
+    )
+
+    assert metrics.today_export_kwh == 0.0        # zero, not None -> the key is published
+    assert metrics.today_import_kwh == 0.0        # exactly what the import side already does

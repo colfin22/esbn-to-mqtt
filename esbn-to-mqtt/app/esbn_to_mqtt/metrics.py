@@ -71,6 +71,21 @@ def build_meter_metrics(
 
     today_import = _sum_for_local_day(readings, "import_kwh", timestamp) or 0.0
     month_import = _sum_for_local_month(readings, "import_kwh", timestamp) or 0.0
+
+    # A meter that exports (solar) but has no readings for TODAY yet has exported zero so
+    # far — it is not "no data". The distinction matters: left as None the key is dropped
+    # from the state payload (build_state_message skips None) while the discovery config
+    # still advertises the sensor, so Home Assistant renders {{ value_json.today_export_kwh }}
+    # against a payload with no such key — the sensor sticks at "unknown" and HA logs a
+    # template warning on every publish. And it always happens, because the ESBN HDF lags
+    # ~24h, so "today" never has readings.
+    # An import-only meter still reports None (and gets no export sensors at all).
+    exports_energy = any(reading.export_kwh is not None for reading in readings)
+    today_export = _sum_for_local_day(readings, "export_kwh", timestamp)
+    month_export = _sum_for_local_month(readings, "export_kwh", timestamp)
+    if exports_energy:
+        today_export = today_export if today_export is not None else 0.0
+        month_export = month_export if month_export is not None else 0.0
     today_import_cost = None
     month_import_cost = None
     current_tariff = None
@@ -103,9 +118,9 @@ def build_meter_metrics(
         latest_import_interval_kwh=_latest_value(readings, "import_kwh"),
         latest_export_interval_kwh=_latest_value(readings, "export_kwh"),
         today_import_kwh=today_import,
-        today_export_kwh=_sum_for_local_day(readings, "export_kwh", timestamp),
+        today_export_kwh=today_export,
         current_month_import_kwh=month_import,
-        current_month_export_kwh=_sum_for_local_month(readings, "export_kwh", timestamp),
+        current_month_export_kwh=month_export,
         latest_esbn_interval_start=latest_interval,
         data_lag_hours=data_lag_hours,
         hdf_rows_parsed=len(readings),

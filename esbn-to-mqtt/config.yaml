@@ -1,5 +1,5 @@
 name: esbn-to-mqtt (colfin22 fork)
-version: "0.4.4-colfin1"
+version: "0.4.5-colfin1"
 slug: esbn_to_mqtt
 description: Publish ESB Networks smart meter HDF data to Home Assistant MQTT sensors (fork adds export_hdf_dir)
 url: https://github.com/colfin22/esbn-to-mqtt/tree/main/esbn-to-mqtt
