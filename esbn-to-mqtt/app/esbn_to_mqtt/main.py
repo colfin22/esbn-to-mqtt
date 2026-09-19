@@ -308,8 +308,11 @@ def main() -> None:
             ):
                 _record_challenge_cooldown(args.data_dir)
             LOGGER.error(
-                "polling cycle failed: %s",
+                "polling cycle failed: %s%s",
                 redact(str(exc), _redaction_secrets(config)),
+                f" (cause: {redact(str(exc.__cause__), _redaction_secrets(config))})"
+                if exc.__cause__ is not None
+                else "",
             )
             try:
                 _publish_offline_if_no_cached_state(config, args.data_dir)
