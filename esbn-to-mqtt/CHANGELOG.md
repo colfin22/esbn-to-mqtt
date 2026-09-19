@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.7-colfin1 (colfin22 fork)
+
+- Fix HDF download 404: ESB Networks now requires an `x-ReturnUrl` header on
+  the `DownloadHdfPeriodic` request; without it every poll failed even with
+  a valid authenticated session.
+- Merge in upstream 0.4.4: HDF timestamps are read as Irish local time
+  instead of being misread as UTC (the meter's 30-minute intervals were off
+  by up to an hour depending on the time of year), with a one-time state
+  migration and backup on first run. Also fixes autumn-DST duplicate-hour
+  handling in the HDF parser.
+
 ## 0.4.4-colfin1 (colfin22 fork)
 
 - Survive ESBN portal timeouts instead of crashing: five raw `httpx` calls
