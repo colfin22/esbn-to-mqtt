@@ -17,6 +17,15 @@ from .tariff import classify_tariff, tariff_rate
 HDF_EXPORT_STUCK_WARNING_POLLS = 2
 HDF_TIMESTAMP_VERSION = 2
 
+# A handful of legacy interval keys in production state files contain unicode
+# superscript digits (e.g. "0¹:00" instead of "01:00") from a past encoding
+# glitch. Normalize them before parsing rather than losing that interval's
+# already-processed status during migration.
+_SUPERSCRIPT_DIGIT_TRANSLATION = str.maketrans(
+    {"⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4",
+     "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9"},
+)
+
 
 def _migrate_timestamp(timestamp: datetime, *, fold: int = 0) -> datetime:
     # Undo the old interval-end subtraction before interpreting the wall clock.
@@ -31,7 +40,9 @@ def _migrate_interval_keys(
     migrated_values: dict[str, float] = {}
     for interval_id in processed | values.keys():
         timestamp_text, channel = interval_id.rsplit(":", 1)
-        timestamp = datetime.fromisoformat(timestamp_text)
+        timestamp = datetime.fromisoformat(
+            timestamp_text.translate(_SUPERSCRIPT_DIGIT_TRANSLATION)
+        )
         new_id = f"{_migrate_timestamp(timestamp).isoformat()}:{channel}"
         if new_id in migrated:
             raise ValueError("legacy interval keys collide after timezone migration")

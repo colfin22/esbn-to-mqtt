@@ -122,6 +122,33 @@ def test_migration_does_not_replay_legacy_keys_without_values(tmp_path: Path) ->
     assert migrated.apply(readings).apply_tariff_costs(readings, TARIFF) == migrated
 
 
+def test_migration_normalizes_superscript_digit_corruption(tmp_path: Path) -> None:
+    # A past encoding glitch left some legacy interval keys with a unicode
+    # superscript digit instead of an ASCII one, e.g. "0¹:00" for "01:00".
+    path = tmp_path / "state.json"
+    content = HEADER + "2026-05-16 19:00,1.0,0.1\n"
+    clean = legacy_state(path, content)
+    expected = clean.migrate_hdf_timestamps().processed_interval_values
+
+    payload = json.loads(path.read_text())
+    corrupted_key = "2026-05-16T18:3⁰:00+00:00:import"
+    clean_key = "2026-05-16T18:30:00+00:00:import"
+    payload["processed_intervals"] = [
+        corrupted_key if key == clean_key else key for key in payload["processed_intervals"]
+    ]
+    payload["processed_interval_values"] = {
+        (corrupted_key if key == clean_key else key): value
+        for key, value in payload["processed_interval_values"].items()
+    }
+    path.write_text(json.dumps(payload))
+    legacy = AccumulatorState.load(path)
+
+    migrated = legacy.migrate_hdf_timestamps()
+
+    assert migrated.processed_interval_values == expected
+    assert migrated.hdf_timestamp_version == 2
+
+
 def test_current_state_is_not_migrated(tmp_path: Path) -> None:
     state = AccumulatorState.empty().apply(parse_hdf_csv(HEADER + ROWS[0] + "\n"))
     path = tmp_path / "state.json"

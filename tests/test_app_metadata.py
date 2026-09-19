@@ -38,7 +38,7 @@ def test_app_metadata() -> None:
     config = load_yaml(ROOT / "esbn-to-mqtt" / "config.yaml")
 
     assert config["name"] == "esbn-to-mqtt (colfin22 fork)"
-    assert config["version"] == "0.4.8-colfin1"
+    assert config["version"] == "0.4.9-colfin1"
     assert config["slug"] == "esbn_to_mqtt"
     assert config["stage"] == "stable"
     assert config["options"]["mqtt_host"] == "core-mosquitto"

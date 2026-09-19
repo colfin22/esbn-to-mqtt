@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.9-colfin1 (colfin22 fork)
+
+- Fix the timezone migration crashing on legacy state: my own state file had
+  interval keys with unicode superscript digits from a past encoding glitch
+  (e.g. `18:3¹` instead of `18:31`), which broke `datetime.fromisoformat`
+  and made every poll fail after the 0.4.7 upgrade. The migration now
+  normalizes those digits before parsing instead of aborting.
+
 ## 0.4.7-colfin1 (colfin22 fork)
 
 - Fix HDF download 404: ESB Networks now requires an `x-ReturnUrl` header on
